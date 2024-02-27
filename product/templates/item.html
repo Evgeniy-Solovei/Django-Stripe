@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ item.name }}</title>
+</head>
+<body>
+
+<h1>{{ item.name }}</h1>
+<p>{{ item.description }}</p>
+<p>Price: {{ item.price }}</p>
+
+<button id="buyButton">Buy Now</button>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // Инициализация Stripe с переданным публичным ключом
+    const stripe = Stripe('{{stripe_publishable_key}}');
+
+    document.getElementById('buyButton').addEventListener('click', async () => {
+        // Отправка запроса на создание сеанса оплаты
+        const response = await fetch(`/buy/{{ item.pk }}`);
+        const sessionData = await response.json();
+
+        // Запуск Checkout формы
+        const result = await stripe.redirectToCheckout({
+            sessionId: sessionData.session_id
+        });
+
+        // Обработка результата
+        if (result.error) {
+            // Обработка ошибок при запуске Checkout формы
+            console.error(result.error.message);
+            alert('Failed to initiate payment. Please try again.');
+        }
+    });
+</script>
+
+</body>
+</html>
